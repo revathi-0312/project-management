@@ -1,0 +1,101 @@
+Enhance your existing database to include resource-related tables:
+
+sql
+Copy
+Edit
+CREATE TABLE resources (
+    resource_id INT AUTO_INCREMENT PRIMARY KEY,
+    resource_name VARCHAR(255) NOT NULL,
+    resource_type ENUM('Human', 'Material', 'Cost') NOT NULL,
+    project_id INT,
+    allocation_hours INT,
+    cost DECIMAL(10, 2),
+    FOREIGN KEY (project_id) REFERENCES projects(project_id)
+);
+This schema allows you to associate resources with specific projects and track their allocation and costs.
+
+b. Backend Logic
+Modify your backend logic to handle resource assignments:
+
+php
+Copy
+Edit
+// Assign a resource to a project
+$resource_name = 'John Doe';
+$resource_type = 'Human';
+$project_id = 1;
+$allocation_hours = 160;
+$cost = 2000.00;
+
+$stmt = $conn->prepare("INSERT INTO resources (resource_name, resource_type, project_id, allocation_hours, cost) VALUES (?, ?, ?, ?, ?)");
+$stmt->bind_param("ssiid", $resource_name, $resource_type, $project_id, $allocation_hours, $cost);
+$stmt->execute();
+This code snippet demonstrates how to assign a human resource to a project with specified hours and cost.
+
+3. Frontend Interface
+Create a user-friendly interface to manage resources:
+
+html
+Copy
+Edit
+<form method="POST" action="assign_resource.php">
+    <label for="resource_name">Resource Name:</label>
+    <input type="text" id="resource_name" name="resource_name" required>
+
+    <label for="resource_type">Resource Type:</label>
+    <select id="resource_type" name="resource_type" required>
+        <option value="Human">Human</option>
+        <option value="Material">Material</option>
+        <option value="Cost">Cost</option>
+    </select>
+
+    <label for="project_id">Project ID:</label>
+    <input type="number" id="project_id" name="project_id" required>
+
+    <label for="allocation_hours">Allocation Hours:</label>
+    <input type="number" id="allocation_hours" name="allocation_hours" required>
+
+    <label for="cost">Cost:</label>
+    <input type="number" id="cost" name="cost" step="0.01" required>
+
+    <button type="submit">Assign Resource</button>
+</form>
+This form allows users to assign resources to projects by specifying the resource name, type, project ID, allocation hours, and cost.
+
+4. Resource Allocation Dashboard
+Develop a dashboard to visualize resource allocation:
+
+html
+Copy
+Edit
+<div class="dashboard">
+    <h2>Resource Allocation Overview</h2>
+    <canvas id="resourceChart"></canvas>
+</div>
+
+<script>
+    var ctx = document.getElementById('resourceChart').getContext('2d');
+    var resourceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Human', 'Material', 'Cost'],
+            datasets: [{
+                label: 'Resource Allocation',
+                data: [<?php echo $human_resources; ?>, <?php echo $material_resources; ?>, <?php echo $cost_resources; ?>],
+                backgroundColor: ['#FF5733', '#33FF57', '#3357FF'],
+                borderColor: ['#FF5733', '#33FF57', '#3357FF'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+This chart visualizes the distribution of resources across different types.
+

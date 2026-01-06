@@ -1,0 +1,276 @@
+<?php
+// Start the session
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['username'])) {
+    header("Location: admin_login.php");
+    exit();
+}
+
+// Database connection parameters
+$servername = "localhost"; // Change as needed
+$username = "root"; // Change as needed
+$password = ""; // Change as needed
+$dbname = "project_management"; // Change as needed
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch ongoing projects (end_date > today)
+// Ongoing Projects
+$sql_ongoing = "
+    SELECT projects.*, clients.name 
+    FROM projects 
+    JOIN clients ON projects.client_id = clients.client_id 
+    WHERE end_date > CURDATE()
+";
+
+$result_ongoing = $conn->query($sql_ongoing);
+
+// Finished Projects
+$sql_finished = "
+    SELECT projects.*, clients.name 
+    FROM projects 
+    JOIN clients ON projects.client_id = clients.client_id 
+    WHERE end_date <= CURDATE()
+";
+
+$result_finished = $conn->query($sql_finished);
+
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .sidebar {
+            width: 200px;
+            float: left;
+            background-color: #fff;
+            border-right: 1px solid #ccc;
+            height: 200vh;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar a {
+            display: block;
+            padding: 40px;
+            text-decoration: none;
+            color: #333;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #007BFF;
+            color: white;
+        }
+        .main-content {
+            margin-left: 220px; /* Space for sidebar */
+            padding: 20px;
+        }
+        .projects-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 70px;
+}
+
+.project-box {
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #e7f3ff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+}
+.project-box1 {
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: lightgreen;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.project-box:hover {
+    transform: scale(1.05);
+    background-color: #cfe8ff;
+}
+
+.project-box img {
+    max-width: 100%;
+    border-radius: 5px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.project-box h3 {
+    margin: 10px 0;
+    color: #007bff;
+}
+
+.project-box p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.project-details {
+    display: none;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-left: 4px solid #007bff;
+    border-radius: 5px;
+    width: 100%;
+    text-align: left;
+}
+
+
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>ADMIN</h2>
+        <a href="dashboard.php">Dashboard</a>
+        <a href="add_project.php">Add Project</a>
+        <a href="add_tasks.php">Add Task</a>
+        <a href="add_expense.php">Expenses</a>
+        <a href="add_clients.php">Add Clients</a>
+        <a href="client_information.php">Client Information</a>
+         <a href="upload.php">Upload</a>
+        <a href="logout.php">Logout</a>
+    </div>
+
+    <div class="main-content">
+<h1 style="color: blue;">Ongoing Projects</h1>
+<div class="projects-container">
+    <?php if ($result_ongoing && $result_ongoing->num_rows > 0): ?>
+        <?php while($row = $result_ongoing->fetch_assoc()): ?>
+            <div class="project-box">
+                
+                <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['project_name']); ?>">
+                <h3><?php echo htmlspecialchars($row['project_name']); ?></h3>
+                <p><strong>Company:</strong> <?php echo htmlspecialchars($row['name']); ?></p>
+                <p><strong>Start Date:</strong> <?php echo htmlspecialchars($row['start_date']); ?></p>
+                <p><strong>End Date:</strong> <?php echo htmlspecialchars($row['end_date']); ?></p>
+                  
+                 <a href="edit_tasks.php?project_name=<?php echo urlencode($row['project_name']); ?>">
+    <button>Edit Tasks</button>
+</a>
+            </div>
+        <?php endwhile; ?>
+    <?php else: ?>
+        <p>No ongoing projects found.</p>
+    <?php endif; ?>
+</div>
+
+
+        <h1 style="color: green;">Finished Projects</h1>
+<div class="projects-container">
+<?php if ($result_finished && $result_finished->num_rows > 0): ?>
+    <?php while($row = $result_finished->fetch_assoc()): ?>
+        <a href="edit_project.php?project_name=<?php echo urlencode($row['project_name']); ?>">
+            <div class="project-box1">
+                <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['project_name']); ?>">
+                <h3><?php echo htmlspecialchars($row['project_name']); ?></h3>
+                <p><strong>Company:</strong> <?php echo htmlspecialchars($row['name']); ?></p>
+                <p><strong>Start Date:</strong> <?php echo htmlspecialchars($row['start_date']); ?></p>
+                <p><strong>End Date:</strong> <?php echo htmlspecialchars($row['end_date']); ?></p>
+            </div>
+        </a>
+    <?php endwhile; ?>
+<?php else: ?>
+    <p>No finished projects found.</p>
+<?php endif; ?>
+</div>
+
+
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+    var buttons = document.querySelectorAll(".view-details");
+    buttons.forEach(function(button) {
+        button.addEventListener("click", function() {
+            var id = "details-" + this.getAttribute("data-id");
+            toggleDetails(id);
+        });
+    });
+});
+
+function toggleDetails(id) {
+    var element = document.getElementById(id);
+    if (element.style.display === "none" || element.style.display === "") {
+        element.style.display = "block";
+    } else {
+        element.style.display = "none";
+    }
+}
+
+</script>
+
+
+
+
+
+</body>
+</html>
+
+<?php
+// Close the database connection
+$conn->close();
+?>

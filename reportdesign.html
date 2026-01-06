@@ -1,0 +1,22 @@
+<html>
+<body>
+<form method="POST" action="generate_report.php">
+    <label for="client_name">Client Name:</label>
+    <input type="text" id="client_name" name="client_name" required><br><br>
+
+    <label for="project_name">Project Name:</label>
+    <input type="text" id="project_name" name="project_name" required><br><br>
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" required><br><br>
+
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date" required><br><br>
+
+    <label for="description">Project Description:</label><br>
+    <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+    <input type="submit" value="Generate PDF">
+</form>
+</body>
+</html>
